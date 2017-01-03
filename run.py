@@ -23,12 +23,12 @@ def main(config):
     if config.get('collect_result').get('file_changed'):
         process.process(config=config)
         push.push(config=config)
-        scraperwiki.sql.save_var(u'hash', config['collect_result']['file_hash'])
+        scraperwiki.sql.save_var('hash', config['collect_result']['file_hash'])
         scraperwiki.sql.save_var('last_update', run_timestamp)
 
     last_update = scraperwiki.sql.get_var('last_update')
-    # The following is necessary because of a bug in scraperwiki.sql.get_var which always returns None even when a
-    # a value is provided in the default parameter.
+    # scraperwiki.sql.get_var has a bug and always returns None even when a value is provided for the 'default' value.
+    # The if statement below is a workaround
     if not last_update:
         last_update = run_timestamp
 
