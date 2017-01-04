@@ -4,6 +4,7 @@
 
 import scraperwiki
 import utils
+import sqlite3 as lite
 
 
 def _get_project_listable_items(project, item_key, item_code_key):
@@ -24,64 +25,68 @@ def _process_projects(config):
     progress_value = 0  # Used to track the number of rows processed so far
     update_progress()
 
-    scraperwiki.sql.execute('DELETE FROM _tmp_projects')
-
-    for project in projects_list:
-        scraperwiki.sql.execute(
-            'INSERT INTO _tmp_projects values (' + ','.join('?' * 46) + ')', (
-                project.get('agencyName'),
-                project.get('applicationCode'),
-                project.get('applicationID'),
-                project.get('beneficiariesAdults'),
-                project.get('beneficiariesBoys'),
-                project.get('beneficiariesChildren'),
-                project.get('beneficiariesFemale'),
-                project.get('beneficiariesGirls'),
-                project.get('beneficiariesMale'),
-                project.get('beneficiariesMen'),
-                project.get('beneficiariesTotal'),
-                project.get('beneficiariesWomen'),
-                project.get('cerfGenderMarkerID'),
-                project.get('cerfGenderMarkerName'),
-                project.get('continentName'),
-                project.get('countryCode'),
-                project.get('countryID'),
-                project.get('countryName'),
-                project.get('dateUSGSignature'),
-                project.get('disbursementDate'),
-                project.get('emergencyCategoryName'),
-                project.get('emergencyGroupName'),
-                project.get('emergencyTypeID'),
-                project.get('emergencyTypeName'),
-                project.get('implementingAgencyID'),
-                project.get('implementingAgencyName'),
-                project.get('letterSentToAgencyDate'),
-                project.get('projectCode'),
-                project.get('projectID'),
-                project.get('projectStartDate'),
-                project.get('projectStatus'),
-                project.get('projectTitle'),
-                project.get('projectTypeID'),
-                project.get('projectTypeName'),
-                project.get('regionName'),
-                project.get('subRegionName'),
-                project.get('tableName'),
-                project.get('totalAmountApproved'),
-                project.get('windowFullName'),
-                project.get('windowID'),
-                project.get('year'),
-                _get_project_listable_items(project, 'projectsectors', 'sectorName'),
-                _get_project_listable_items(project, 'projectsectors', 'clusterName'),
-                _get_project_listable_items(project, 'projectsectors', 'iascSectorname'),
-                _get_project_listable_items(project, 'projectcapcode', 'capCode'),
-                _get_project_listable_items(project, 'projectgrouping', 'groupingName')
-            )
-        )
-        progress_value += 1
-        update_progress()
-
-    scraperwiki.sql.execute('DELETE FROM projects')
-    scraperwiki.sql.execute('INSERT INTO projects SELECT * FROM _tmp_projects')
+    with utils.db_create_connection('./scraperwiki.sqlite') as db:
+        cursor = db.cursor()
+        cursor.execute('begin')
+        cursor.execute('DELETE FROM projects')
+        try:
+            for project in projects_list:
+                cursor.execute(
+                    'INSERT INTO projects values (' + ','.join('?' * 46) + ')', (
+                        project.get('agencyName'),
+                        project.get('applicationCode'),
+                        project.get('applicationID'),
+                        project.get('beneficiariesAdults'),
+                        project.get('beneficiariesBoys'),
+                        project.get('beneficiariesChildren'),
+                        project.get('beneficiariesFemale'),
+                        project.get('beneficiariesGirls'),
+                        project.get('beneficiariesMale'),
+                        project.get('beneficiariesMen'),
+                        project.get('beneficiariesTotal'),
+                        project.get('beneficiariesWomen'),
+                        project.get('cerfGenderMarkerID'),
+                        project.get('cerfGenderMarkerName'),
+                        project.get('continentName'),
+                        project.get('countryCode'),
+                        project.get('countryID'),
+                        project.get('countryName'),
+                        project.get('dateUSGSignature'),
+                        project.get('disbursementDate'),
+                        project.get('emergencyCategoryName'),
+                        project.get('emergencyGroupName'),
+                        project.get('emergencyTypeID'),
+                        project.get('emergencyTypeName'),
+                        project.get('implementingAgencyID'),
+                        project.get('implementingAgencyName'),
+                        project.get('letterSentToAgencyDate'),
+                        project.get('projectCode'),
+                        project.get('projectID'),
+                        project.get('projectStartDate'),
+                        project.get('projectStatus'),
+                        project.get('projectTitle'),
+                        project.get('projectTypeID'),
+                        project.get('projectTypeName'),
+                        project.get('regionName'),
+                        project.get('subRegionName'),
+                        project.get('tableName'),
+                        project.get('totalAmountApproved'),
+                        project.get('windowFullName'),
+                        project.get('windowID'),
+                        project.get('year'),
+                        _get_project_listable_items(project, 'projectsectors', 'sectorName'),
+                        _get_project_listable_items(project, 'projectsectors', 'clusterName'),
+                        _get_project_listable_items(project, 'projectsectors', 'iascSectorname'),
+                        _get_project_listable_items(project, 'projectcapcode', 'capCode'),
+                        _get_project_listable_items(project, 'projectgrouping', 'groupingName')
+                    )
+                )
+                progress_value += 1
+                update_progress()
+            cursor.execute('commit')
+        except Exception as err:
+            cursor.execute('rollback')
+            raise err
 
     return config
 

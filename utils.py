@@ -6,6 +6,7 @@ import hashlib
 import requests
 import datetime
 import sys
+import sqlite3 as lite
 
 
 def date_from_iso_date(s):
@@ -63,3 +64,16 @@ def progress(iteration, total, prefix='', suffix='', decimals=1, bar_length=100)
         sys.stdout.flush()
     except:
         pass
+
+
+def db_create_connection(database):
+    """Returns a connection to the application sqlite database
+
+    Returns:
+        :rtype : sqlite3.Connection
+        :return : A connection to the application's sqlite database
+    """
+    db = lite.connect(database=database)
+    db.text_factory = str
+    db.isolation_level = None
+    return db
