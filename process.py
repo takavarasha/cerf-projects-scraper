@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 """ Processes the raw data according to business rules """
 
-import scraperwiki
 import utils
-import sqlite3 as lite
 
 
 def _get_project_listable_items(project, item_key, item_code_key):
@@ -31,54 +29,33 @@ def _process_projects(config):
         cursor.execute('DELETE FROM projects')
         try:
             for project in projects_list:
+                dateUSGSignature = project.get('dateUSGSignature')
+                if dateUSGSignature:
+                    dateUSGSignature = dateUSGSignature[:10]
+                projectsectors = _get_project_listable_items(project, 'hdxprojectsectors', 'sectorName')
+                projectclusters = _get_project_listable_items(project, 'hdxprojectsectors', 'clusterName')
+                projectcapcodes = _get_project_listable_items(project, 'hdxprojectcapcode', 'capCode')
+                projectgroupings = _get_project_listable_items(project, 'hdxprojectgrouping', 'groupingName')
                 cursor.execute(
-                    'INSERT INTO projects values (' + ','.join('?' * 46) + ')', (
+                    'INSERT INTO projects values (' + ','.join('?' * 18) + ')', (
                         project.get('agencyName'),
-                        project.get('applicationCode'),
-                        project.get('applicationID'),
-                        project.get('beneficiariesAdults'),
-                        project.get('beneficiariesBoys'),
-                        project.get('beneficiariesChildren'),
-                        project.get('beneficiariesFemale'),
-                        project.get('beneficiariesGirls'),
-                        project.get('beneficiariesMale'),
-                        project.get('beneficiariesMen'),
-                        project.get('beneficiariesTotal'),
-                        project.get('beneficiariesWomen'),
-                        project.get('cerfGenderMarkerID'),
-                        project.get('cerfGenderMarkerName'),
                         project.get('continentName'),
                         project.get('countryCode'),
-                        project.get('countryID'),
                         project.get('countryName'),
-                        project.get('dateUSGSignature'),
-                        project.get('disbursementDate'),
-                        project.get('emergencyCategoryName'),
-                        project.get('emergencyGroupName'),
-                        project.get('emergencyTypeID'),
+                        dateUSGSignature,
                         project.get('emergencyTypeName'),
-                        project.get('implementingAgencyID'),
-                        project.get('implementingAgencyName'),
-                        project.get('letterSentToAgencyDate'),
                         project.get('projectCode'),
                         project.get('projectID'),
-                        project.get('projectStartDate'),
-                        project.get('projectStatus'),
                         project.get('projectTitle'),
-                        project.get('projectTypeID'),
-                        project.get('projectTypeName'),
                         project.get('regionName'),
-                        project.get('subRegionName'),
                         project.get('tableName'),
                         project.get('totalAmountApproved'),
                         project.get('windowFullName'),
-                        project.get('windowID'),
                         project.get('year'),
-                        _get_project_listable_items(project, 'projectsectors', 'sectorName'),
-                        _get_project_listable_items(project, 'projectsectors', 'clusterName'),
-                        _get_project_listable_items(project, 'projectsectors', 'iascSectorname'),
-                        _get_project_listable_items(project, 'projectcapcode', 'capCode'),
-                        _get_project_listable_items(project, 'projectgrouping', 'groupingName')
+                        projectsectors,
+                        projectclusters,
+                        projectgroupings,
+                        projectcapcodes
                     )
                 )
                 progress_value += 1

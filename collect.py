@@ -10,7 +10,7 @@ import codecs
 
 def collect(config):
     json_file_path = utils.download_file(
-        'http://cerfgms-webapi.unocha.org/v1/project/All.json',
+        'http://cerfgms-webapi.unocha.org/v1/hdxproject/All.json',
         'raw.json'
     )
     json_data = json.loads(codecs.open(json_file_path, encoding='utf_8').read())
